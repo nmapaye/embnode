@@ -1,4 +1,4 @@
-# embnode
+# Embnode
 Embedded Node on FreeRTOS (ESP32/STM32)
 
 Scope
