@@ -1,3 +1,4 @@
+# embnode
 Embedded Node on FreeRTOS (ESP32/STM32)
 
 Scope
@@ -36,4 +37,3 @@ Quick testing
 
 CI
 - GitHub Actions workflow builds and runs the host simulator test on pushes/PRs: `.github/workflows/ci.yml`.
-# embnode
