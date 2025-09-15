@@ -1,0 +1,21 @@
+idf_component_register(
+    SRCS
+        ../src/main.cpp
+        ../src/telemetry/crc16.cpp
+        ../src/telemetry/packet.cpp
+        ../src/tasks/sampler_task.cpp
+        ../src/tasks/aggregator_task.cpp
+        ../src/tasks/comms_task.cpp
+        ../src/tasks/watchdog_task.cpp
+        ../src/ota/ota.cpp
+        ../src/hal/esp32_hal.cpp
+        ../src/metrics/power.cpp
+    INCLUDE_DIRS
+        ../include
+    REQUIRES
+        freertos
+        esp_timer
+        esp_hw_support
+        esp_system
+)
+

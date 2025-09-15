@@ -1,0 +1,16 @@
+menu "EMBNODE"
+
+config EMBNODE_SAMPLE_RATE_HZ
+    int "Sampler rate (Hz)"
+    default 100
+    help
+        Target sampler rate.
+
+config EMBNODE_AGG_BATCH
+    int "Aggregator batch size"
+    default 64
+    help
+        Number of samples per telemetry packet.
+
+endmenu
+
