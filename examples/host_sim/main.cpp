@@ -1,6 +1,5 @@
 #include <cstdio>
 #include <vector>
-
 #include "embnode/metrics/power.hpp"
 #include "embnode/hal/hal.hpp"
 #include "embnode/telemetry/packet.hpp"

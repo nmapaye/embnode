@@ -1,8 +1,8 @@
 // Telemetry framing + CRC
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
-#include <array>
 #include <vector>
 #include "embnode/telemetry/crc16.hpp"
 
@@ -28,11 +28,14 @@ struct Frame {
     uint16_t crc {0};
 };
 
-// Serialize into buffer
+// Serialize into a stable little-endian wire format. Returns false and clears
+// out when the header or payload cannot be represented.
+bool encode(const Frame& f, std::vector<uint8_t>& out);
+
+// Compatibility wrapper. Returns an empty buffer on validation failure.
 std::vector<uint8_t> encode(const Frame& f);
 
-// Deserialize from buffer (validates CRC and magic). Returns true on success.
+// Deserialize an exact frame (validates version, type, length, CRC, and magic).
 bool decode(const uint8_t* buf, size_t len, Frame& out);
 
 }
-

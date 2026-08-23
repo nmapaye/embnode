@@ -1,44 +1,86 @@
 #include "embnode/metrics/power.hpp"
+
 #include "embnode/hal/hal.hpp"
 
 namespace embnode::metrics {
+namespace {
 
-static uint64_t awake_start = 0;
-static uint64_t sleep_start = 0;
-static DutyStats stats;
-static bool is_awake = true;
+uint64_t interval_start = 0;
+DutyStats accumulated{};
+bool awake = true;
+bool initialized = false;
+
+void initialize_if_needed() {
+    if (!initialized) {
+        interval_start = hal::millis();
+        awake = true;
+        initialized = true;
+    }
+}
+
+DutyStats snapshot(uint64_t now) {
+    initialize_if_needed();
+    DutyStats result = accumulated;
+    const uint64_t elapsed = now >= interval_start ? now - interval_start : 0;
+    if (awake) {
+        result.awake_ms += elapsed;
+    } else {
+        result.asleep_ms += elapsed;
+    }
+    return result;
+}
+
+}  // namespace
+
+void reset() {
+    accumulated = {};
+    interval_start = hal::millis();
+    awake = true;
+    initialized = true;
+}
 
 void mark_awake() {
-    uint64_t now = hal::millis();
-    if (!is_awake) {
-        // leaving sleep
-        if (sleep_start) stats.asleep_ms += (now - sleep_start);
-        awake_start = now;
-        is_awake = true;
+    initialize_if_needed();
+    if (awake) {
+        return;
     }
+    const uint64_t now = hal::millis();
+    if (now >= interval_start) {
+        accumulated.asleep_ms += now - interval_start;
+    }
+    interval_start = now;
+    awake = true;
 }
 
 void mark_sleep() {
-    uint64_t now = hal::millis();
-    if (is_awake) {
-        // entering sleep
-        if (awake_start) stats.awake_ms += (now - awake_start);
-        sleep_start = now;
-        is_awake = false;
+    initialize_if_needed();
+    if (!awake) {
+        return;
     }
+    const uint64_t now = hal::millis();
+    if (now >= interval_start) {
+        accumulated.awake_ms += now - interval_start;
+    }
+    interval_start = now;
+    awake = false;
 }
 
-DutyStats duty_stats() { return stats; }
+DutyStats duty_stats() {
+    return snapshot(hal::millis());
+}
 
 float duty_cycle_percent() {
-    uint64_t total = stats.awake_ms + stats.asleep_ms;
-    if (total == 0) return 0.f;
-    return (100.0f * static_cast<float>(stats.awake_ms)) / static_cast<float>(total);
+    const DutyStats stats = duty_stats();
+    const uint64_t total = stats.awake_ms + stats.asleep_ms;
+    if (total == 0) {
+        return 0.0F;
+    }
+    return 100.0F * static_cast<float>(stats.awake_ms) / static_cast<float>(total);
 }
 
-float average_current_ma(float i_awake_ma, float i_sleep_ma) {
-    float dc = duty_cycle_percent() / 100.0f;
-    return dc * i_awake_ma + (1.0f - dc) * i_sleep_ma;
+float average_current_ma(float awake_current_ma, float sleep_current_ma) {
+    const float duty_cycle = duty_cycle_percent() / 100.0F;
+    return duty_cycle * awake_current_ma + (1.0F - duty_cycle) * sleep_current_ma;
 }
 
-}
+}  // namespace embnode::metrics

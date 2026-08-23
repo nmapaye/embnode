@@ -5,9 +5,19 @@ option(EMBNODE_TARGET_ESP32 "Build for ESP32 (ESP-IDF)" OFF)
 option(EMBNODE_TARGET_STM32 "Build for STM32" OFF)
 option(EMBNODE_BUILD_FREERTOS_LIB "Build the FreeRTOS-based library" ON)
 option(EMBNODE_BUILD_HOST_SIM "Build host-only simulator/tests" ON)
+option(EMBNODE_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer for host targets" OFF)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+function(embnode_configure_host_target target)
+  target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
+  target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+  if(EMBNODE_ENABLE_SANITIZERS AND CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+    target_compile_options(${target} PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
+    target_link_options(${target} PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
+  endif()
+endfunction()
 
 if(EMBNODE_BUILD_FREERTOS_LIB)
   add_library(embnode
@@ -45,7 +55,19 @@ if(EMBNODE_BUILD_HOST_SIM)
       src/hal/hal_stub.cpp
       src/metrics/power.cpp
   )
-  target_include_directories(embnode_host_sim PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
+  embnode_configure_host_target(embnode_host_sim)
+
+  add_executable(embnode_host_tests
+      tests/host_tests.cpp
+      src/telemetry/crc16.cpp
+      src/telemetry/packet.cpp
+      src/ota/ota.cpp
+      src/hal/hal_stub.cpp
+      src/metrics/power.cpp
+  )
+  embnode_configure_host_target(embnode_host_tests)
+
   enable_testing()
   add_test(NAME host_sim COMMAND embnode_host_sim)
+  add_test(NAME host_contracts COMMAND embnode_host_tests)
 endif()
