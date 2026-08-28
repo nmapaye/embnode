@@ -1,0 +1,40 @@
+name: Host CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  host:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Configure
+        run: cmake -S . -B build -DEMBNODE_BUILD_FREERTOS_LIB=OFF -DEMBNODE_BUILD_HOST_SIM=ON
+      - name: Build
+        run: cmake --build build --parallel
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+  sanitizers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Configure
+        run: cmake -S . -B build-sanitized -DEMBNODE_BUILD_FREERTOS_LIB=OFF -DEMBNODE_BUILD_HOST_SIM=ON -DEMBNODE_ENABLE_SANITIZERS=ON
+      - name: Build
+        run: cmake --build build-sanitized --parallel
+      - name: Test
+        run: ctest --test-dir build-sanitized --output-on-failure

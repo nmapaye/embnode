@@ -10,6 +10,15 @@ Implementation checkpoints
 - Power profiling: deep sleep hooks, wake latency; jitter budget for sampler.
 - Telemetry packet framing + CRC; backpressure handling.
 
+The host build uses a stable little-endian telemetry format and rejects unknown
+versions, packet types, oversized payloads, length mismatches, and CRC failures.
+Power statistics include the interval currently in progress and can be reset for
+deterministic tests.
+
+OTA support is a coordinator, not a hardware implementation. A platform backend
+must provide begin, write, finalize, and abort operations. Without one, the
+compatibility wrapper fails closed instead of reporting a successful update.
+
 Benchmarks to publish (targets)
 - Sampler jitter ≤ 1 ms at 100 Hz, sustained 24h.
 - Average current draw ≤ X mA at Y% duty cycle; OTA < 2 min.
@@ -36,4 +45,6 @@ Quick testing
   - Start `app_main()` from a CMSIS-RTOS thread after scheduler init.
 
 CI
-- GitHub Actions workflow builds and runs the host simulator test on pushes/PRs: `.github/workflows/ci.yml`.
+- GitHub Actions builds the host simulator and contract tests, then repeats them
+  with AddressSanitizer and UndefinedBehaviorSanitizer. No hardware or network
+  service is required.

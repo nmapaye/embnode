@@ -12,6 +12,7 @@ struct DutyStats {
 
 void mark_awake();
 void mark_sleep();
+void reset();
 DutyStats duty_stats();
 float duty_cycle_percent();
 float average_current_ma(float i_awake_ma, float i_sleep_ma);

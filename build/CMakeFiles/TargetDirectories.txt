@@ -1,4 +1,0 @@
-/Users/nmapaye/Documents/Local Coding Projects/embnode/build/CMakeFiles/embnode_host_sim.dir
-/Users/nmapaye/Documents/Local Coding Projects/embnode/build/CMakeFiles/test.dir
-/Users/nmapaye/Documents/Local Coding Projects/embnode/build/CMakeFiles/edit_cache.dir
-/Users/nmapaye/Documents/Local Coding Projects/embnode/build/CMakeFiles/rebuild_cache.dir
