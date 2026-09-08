@@ -71,6 +71,10 @@ Result perform_ota(Backend& backend, const uint8_t* image, size_t len,
         backend.abort();
         return Result::FinalizeFailed;
     }
+    // Finalization is irreversible. Report a missed deadline without aborting the image.
+    if (timed_out(started_at, timeout_ms, clock)) {
+        return Result::CommittedAfterDeadline;
+    }
     return Result::Success;
 }
 

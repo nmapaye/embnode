@@ -47,6 +47,10 @@ if(EMBNODE_BUILD_FREERTOS_LIB)
 endif()
 
 if(EMBNODE_BUILD_HOST_SIM)
+  # Compile this public header without any transitive includes.
+  add_library(embnode_config_header_check OBJECT tests/config_header.cpp)
+  embnode_configure_host_target(embnode_config_header_check)
+
   add_executable(embnode_host_sim
       examples/host_sim/main.cpp
       src/telemetry/crc16.cpp

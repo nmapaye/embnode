@@ -168,9 +168,9 @@ bool ota_contracts() {
                  "write failure must abort") &&
            check(embnode::ota::perform_ota(finalize_failure, image, sizeof(image), 100, 2, ota_clock) == Result::FinalizeFailed && finalize_failure.aborted,
                  "finalize failure must abort") &&
-           check(embnode::ota::perform_ota(finalize_crosses_deadline, image, sizeof(image), 100, 2, ota_clock) == Result::Success &&
+           check(embnode::ota::perform_ota(finalize_crosses_deadline, image, sizeof(image), 100, 2, ota_clock) == Result::CommittedAfterDeadline &&
                      finalize_crosses_deadline.finalized && !finalize_crosses_deadline.aborted,
-                 "successful finalization must remain committed after the deadline") &&
+                 "late finalization must report a missed deadline without aborting the committed image") &&
            check(embnode::ota::perform_ota(timeout, image, sizeof(image), 5, 2, ota_clock) == Result::TimedOut && timeout.aborted,
                  "timeout must abort") &&
            check(!embnode::ota::perform_ota(image, sizeof(image), 100),

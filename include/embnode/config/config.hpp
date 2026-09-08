@@ -1,6 +1,7 @@
 // Node configuration
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 
 namespace embnode::config {
@@ -21,7 +22,7 @@ static constexpr float kSleepCurrent_mA = 0.15f;   // deep sleep current
 static constexpr int kBackpressurePolicy = 2;
 
 // Telemetry
-static constexpr size_t kAggregatorBatchSize = 64; // samples per packet
+static constexpr std::size_t kAggregatorBatchSize = 64; // samples per packet
 
 // OTA
 static constexpr uint32_t kOtaTimeoutMs = 120000; // 2 minutes
