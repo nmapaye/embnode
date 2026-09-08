@@ -18,6 +18,9 @@ deterministic tests.
 OTA support is a coordinator, not a hardware implementation. A platform backend
 must provide begin, write, finalize, and abort operations. Without one, the
 compatibility wrapper fails closed instead of reporting a successful update.
+If finalization commits the image after the deadline, the coordinator returns
+`CommittedAfterDeadline`. The caller can record the deadline miss, but must not
+abort or retry an image that has already committed.
 
 Benchmarks to publish (targets)
 - Sampler jitter ≤ 1 ms at 100 Hz, sustained 24h.
