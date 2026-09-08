@@ -13,6 +13,8 @@ enum class Result {
     WriteFailed,
     FinalizeFailed,
     TimedOut,
+    // The image committed, but finalization exceeded the deadline. Do not retry or abort.
+    CommittedAfterDeadline,
 };
 
 class Backend {
