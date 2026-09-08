@@ -111,6 +111,7 @@ public:
     bool write_ok = true;
     bool finalize_ok = true;
     uint64_t advance_per_write = 0;
+    uint64_t advance_on_finalize = 0;
     size_t expected_size = 0;
     std::vector<size_t> writes;
     bool finalized = false;
@@ -128,6 +129,7 @@ public:
     }
     bool finalize() override {
         finalized = true;
+        ota_now += advance_on_finalize;
         return finalize_ok;
     }
     void abort() noexcept override { aborted = true; }
@@ -153,6 +155,8 @@ bool ota_contracts() {
     write_failure.write_ok = false;
     FakeBackend finalize_failure;
     finalize_failure.finalize_ok = false;
+    FakeBackend finalize_crosses_deadline;
+    finalize_crosses_deadline.advance_on_finalize = 100;
     FakeBackend timeout;
     timeout.advance_per_write = 5;
     ota_now = 0;
@@ -164,6 +168,9 @@ bool ota_contracts() {
                  "write failure must abort") &&
            check(embnode::ota::perform_ota(finalize_failure, image, sizeof(image), 100, 2, ota_clock) == Result::FinalizeFailed && finalize_failure.aborted,
                  "finalize failure must abort") &&
+           check(embnode::ota::perform_ota(finalize_crosses_deadline, image, sizeof(image), 100, 2, ota_clock) == Result::Success &&
+                     finalize_crosses_deadline.finalized && !finalize_crosses_deadline.aborted,
+                 "successful finalization must remain committed after the deadline") &&
            check(embnode::ota::perform_ota(timeout, image, sizeof(image), 5, 2, ota_clock) == Result::TimedOut && timeout.aborted,
                  "timeout must abort") &&
            check(!embnode::ota::perform_ota(image, sizeof(image), 100),
